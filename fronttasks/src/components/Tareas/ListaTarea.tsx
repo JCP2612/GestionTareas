@@ -1,5 +1,5 @@
 import React from "react";
-import useTareaStore from "../../hooks/useTareaStore";
+import { useDeleteTask, useFetchTasks } from "../../hooks/useTareaStore";
 import {
     Card,
     CardContent,
@@ -15,11 +15,20 @@ import FormularioTarea from "./FormularioTarea";
 
 const ListaTarea: React.FC = () => {
 
-    const { tareas, fetchTasks, deleteTask } = useTareaStore();
+    const { data: tareas } = useFetchTasks();
+    const deleteTask = useDeleteTask();
 
-    React.useEffect(() => {
-        fetchTasks();
-    }, [fetchTasks])
+    const handleDelete = async (id: string) => {
+        if (window.confirm("¿Estás seguro de que deseas eliminar esta tarea?")) {
+            try {
+                await deleteTask.mutateAsync(id); // Llamada para eliminar
+                alert("Tarea eliminada con éxito.");
+            } catch (error) {
+                console.error('Error al eliminar la tarea', error)
+                alert("Hubo un error al eliminar la tarea.")
+            }
+        }
+    }
 
     return (
         <Box padding={5}>
@@ -30,17 +39,17 @@ const ListaTarea: React.FC = () => {
                 <FormularioTarea />
             </div>
             <Grid2 container spacing={2}>
-                {tareas.map((tarea) => (
+                {tareas?.map((tarea) => (
                     <Card key={tarea._id} style={{ backgroundColor: "#ffff" }}>
                         <CardContent>
                             <Typography variant="h6">Titulo: {tarea.title}</Typography>
                             <Typography variant="body2">Descripcion: {tarea.description}</Typography>
                             <Typography variant="body2">Prioridad: {tarea.priority}</Typography>
-                            <Typography variant="body2">Estado: {tarea.complete}</Typography>
+                            <Typography variant="body2">Estado: {tarea.complete ? "Completada" : "Pendiente"}</Typography>
                         </CardContent>
                         <CardActions>
                             <IconButton color="primary"><EditIcon /></IconButton>
-                            <IconButton onClick={() => deleteTask(tarea._id)} color="error"><DeleteIcon /></IconButton>
+                            <IconButton onClick={() => handleDelete(tarea._id)} color="error"><DeleteIcon /></IconButton>
                         </CardActions>
                     </Card>
                 ))}

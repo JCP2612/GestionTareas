@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Modal,
     Box,
@@ -7,36 +7,78 @@ import {
     Button,
     IconButton,
     Select,
-    // MenuItem,
     InputLabel,
-    OutlinedInput,
     Checkbox,
     FormControlLabel,
+    MenuItem,
 } from "@mui/material";
-// import { SelectChangeEvent } from '@mui/material/Select';
 import CloseIcon from "@mui/icons-material/Close";
-import { create } from "zustand";
-interface Modal {
-    open: boolean;
-    setOpen: (open: boolean) => void;
-}
-
-const useModal = create<Modal>((set) => ({
-    open: false,
-    setOpen: (open) => set({ open })
-}))
+import { SelectChangeEvent } from "@mui/material";
+import { useCreateTask } from "../../hooks/useTareaStore"; // Usar el hook de React Query
 
 const FormularioTarea: React.FC = () => {
-    const { open, setOpen } = useModal();
+    const { mutate: createTask } = useCreateTask();
+    const [open, setOpen] = useState(false);
+    const [taskData, setTaskData] = useState<{
+        title: string;
+        description: string;
+        priority: "Baja" | "Media" | "Alta";
+        complete: boolean;
+    }>({
+        title: "",
+        description: "",
+        priority: "Baja",
+        complete: false,
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+        const { name, value, type, checked } = e.target as HTMLInputElement;
+        setTaskData((prev) => ({
+            ...prev,
+            [name!]: type === "checkbox" ? checked : value,
+        }));
+    };
+
+    const handleSelectChange = (e: SelectChangeEvent<string>) => {
+        const { name, value } = e.target;
+        setTaskData((prev) => ({
+            ...prev,
+            [name]: name === "priority" ? (value as "Baja" | "Media" | "Alta") : value,
+        }));
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        createTask(taskData, {
+            onSuccess: () => {
+                setTaskData({ title: "", description: "", priority: "Baja", complete: false });
+                alert("Tarea creada exitosamente");
+                setOpen(false);
+            },
+            onError: (error) => {
+                console.error("Error al crear la tarea", error);
+                alert("Error al crear la tarea");
+            },
+        });
+    };
 
     return (
         <>
-            <Button variant="contained" color="primary" onClick={() => setOpen(true)}>Crear nueva tarea</Button>
-            <Modal open={open} onClose={() => setOpen(false)} sx={{
-                backdropFilter: "blur(4px)", // Agrega un desenfoque al fondo
-                backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo oscuro con opacidad
-            }}>
+            <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
+                Crear nueva tarea
+            </Button>
+            <Modal
+                open={open}
+                onClose={() => setOpen(false)}
+                sx={{
+                    backdropFilter: "blur(4px)",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                }}
+            >
                 <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    style={{ display: "flex", flexDirection: "column", gap: "16px" }}
                     sx={{
                         position: "absolute",
                         top: "50%",
@@ -48,54 +90,70 @@ const FormularioTarea: React.FC = () => {
                         p: 4,
                         width: 400,
                         border: "1px solid #ddd",
-                    }}>
+                    }}
+                >
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="h6">Crear Tarea</Typography>
                         <IconButton onClick={() => setOpen(false)}>
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    <form style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                        <TextField
-                            fullWidth
-                            margin="normal"
-                            label="Titulo"
-                            name="name"
-                            required
-                        />
-                        <TextField
-                            fullWidth
-                            margin="normal"
-                            label="Descripcion"
-                            name="name"
-                        />
-                        <InputLabel id="demo-multiple-name-label">Prioridad</InputLabel>
-                        <Select
-                            labelId="demo-multiple-name-label"
-                            input={<OutlinedInput label="Name" />}
-                            value="Selecciona una prioridad"
-                        >
-                        </Select>
-                        <FormControlLabel
-                            control={
-                                <Checkbox defaultChecked sx={{
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Titulo"
+                        name="title"
+                        value={taskData.title}
+                        onChange={handleChange}
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Descripcion"
+                        value={taskData.description}
+                        onChange={handleChange}
+                        name="description"
+                    />
+                    <InputLabel id="priority-label">Prioridad</InputLabel>
+                    <Select
+                        name="priority"
+                        labelId="priority-label"
+                        value={taskData.priority}
+                        onChange={handleSelectChange}
+                    >
+                        <MenuItem value="Baja">Baja</MenuItem>
+                        <MenuItem value="Media">Media</MenuItem>
+                        <MenuItem value="Alta">Alta</MenuItem>
+                    </Select>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                name="complete"
+                                checked={taskData.complete}
+                                onChange={handleChange}
+                                sx={{
                                     color: "#43a047",
-                                    '&.Mui-checked': {
+                                    "&.Mui-checked": {
                                         color: "#43a047",
-                                    }
-                                }}></Checkbox>
-                            }
-                            label="Marcar tarea como completada" />
-
-                    </form>
+                                    },
+                                }}
+                            />
+                        }
+                        label="Marcar tarea como completada"
+                    />
                     <Box display="flex" justifyContent="center" mt={2}>
-                        <Button onClick={() => setOpen(false)} color="secondary" sx={{ mr: 1 }}>Cancelar</Button>
-                        <Button variant="contained" color="primary">Agregar tarea</Button>
+                        <Button onClick={() => setOpen(false)} color="secondary" sx={{ mr: 1 }}>
+                            Cancelar
+                        </Button>
+                        <Button variant="contained" color="primary" type="submit" >
+                            Agregar nueva tarea
+                        </Button>
                     </Box>
                 </Box>
             </Modal>
         </>
-    )
-}
+    );
+};
 
 export default FormularioTarea;

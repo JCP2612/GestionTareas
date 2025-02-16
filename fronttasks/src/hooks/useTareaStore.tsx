@@ -1,53 +1,110 @@
-import { create } from "zustand";
-import { CreateTask, Tarea, UpdateTask } from "../interface/task.interface";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     createTaskRequest,
     deleteTaskRequest,
     getTasksRequest,
     updateTaskRequest,
 } from "../api/tarea";
+import { CreateTask, Tarea, UpdateTask } from "../interface/task.interface";
 
-interface TareaStore {
-    tareas: Tarea[];
-    fetchTasks: () => Promise<void>;
-    createTask: (tarea: CreateTask) => Promise<void>;
-    updateTask: (id: string, tarea: UpdateTask) => Promise<void>;
-    deleteTask: (id: string) => Promise<void>;
-}
+// Hook para obtener tareas
+export const useFetchTasks = () => {
+    return useQuery<Tarea[], Error>({
+        queryKey: ["tareas"],
+        queryFn: async () => {
+            const response = await getTasksRequest();
+            if (!response.ok) {
+                throw new Error("Error al obtener las tareas");
+            }
+            return response.json();
+        },
+    });
+};
 
-const useTareaStore = create<TareaStore>((set) => ({
-    tareas: [],
 
-    fetchTasks: async () => {
-        const response = await getTasksRequest();
-        const data = await response.json();
-        set({ tareas: data })
-    },
+// Hook para crear tareas
+export const useCreateTask = () => {
+    const queryClient = useQueryClient();
 
-    createTask: async (tarea: CreateTask) => {
-        const response = await createTaskRequest(tarea);
-        const data = await response.json();
-        set((state) => ({ tareas: [...state.tareas, data] }));
-    },
+    return useMutation<Tarea, Error, CreateTask>({
+        mutationFn: async (tarea: CreateTask) => {
+            const response = await createTaskRequest(tarea);
+            if (!response.ok) {
+                throw new Error("Error al crear la tarea");
+            }
+            return response.json();
+        },
+        onSuccess: (newTask) => {
+            // Actualizamos la caché de tareas después de crear una nueva
+            queryClient.setQueryData<Tarea[]>(["tareas"], (oldTasks) =>
+                oldTasks ? [...oldTasks, newTask] : [newTask]
+            );
+        },
+        onError: (error) => {
+            console.error("Error al crear la tarea:", error.message);
+        },
+    });
+};
 
-    updateTask: async (id: string, tarea: UpdateTask) => {
-        const response = await updateTaskRequest(id, tarea);
-        const data = await response.json();
-        set((state) => ({
-            tareas: state.tareas.map((tarea) =>
-                tarea._id === id ? { ...tarea, ...data } : tarea
-            ),
-        }));
-    },
+// Hook para actualizar tareas
+export const useUpdateTask = () => {
+    const queryClient = useQueryClient();
 
-    deleteTask: async (id: string) => {
-        const response = await deleteTaskRequest(id);
-        if (response.status === 204) {
-            set((state) => ({
-                tareas: state.tareas.filter((tarea) => tarea._id !== id),
-            }));
-        }
-    },
-}));
+    return useMutation<Tarea, Error, { id: string; tarea: UpdateTask }>({
+        mutationFn: async ({ id, tarea }) => {
+            const response = await updateTaskRequest(id, tarea);
+            if (!response.ok) {
+                throw new Error("Error al actualizar la tarea");
+            }
+            return response.json();
+        },
+        onSuccess: (updatedTask) => {
+            // Actualizamos la caché de tareas después de modificar una
+            queryClient.setQueryData<Tarea[]>(["tareas"], (oldTasks) =>
+                oldTasks
+                    ? oldTasks.map((task) =>
+                        task._id === updatedTask._id ? updatedTask : task
+                    )
+                    : []
+            );
+        },
+        onError: (error) => {
+            console.error("Error al actualizar la tarea:", error.message);
+        },
+    });
+};
 
-export default useTareaStore;
+// Hook para eliminar tareas
+export const useDeleteTask = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<void, Error, string>({
+        mutationFn: async (id: string) => {
+            const response = await deleteTaskRequest(id);
+            if (!response.ok) {
+                throw new Error("Error al eliminar la tarea");
+            }
+        },
+        onSuccess: (_, id) => {
+            // Eliminamos la tarea de la caché
+            queryClient.setQueryData<Tarea[]>(["tareas"], (oldTasks) =>
+                oldTasks ? oldTasks.filter((task) => task._id !== id) : []
+            );
+        },
+        onError: (error) => {
+            console.error("Error al eliminar la tarea:", error.message);
+        },
+    });
+};
+
+// Hook personalizado para filtrar tareas
+export const useFilteredTasks = (searchTerm: string) => {
+    const { data: tareas = [], isLoading, isError } = useFetchTasks();
+
+    const filteredTareas = tareas.filter((tarea) =>
+        tarea.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return { filteredTareas, isLoading, isError };
+};
+

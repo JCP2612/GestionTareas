@@ -7,19 +7,19 @@ export const getTasksRequest = async () => fetch(`${API}/tareas`);
 export const getTaskIdRequest = async (id: string) =>
   fetch(`${API}/tareas/${id}`);
 
-export const createTaskRequest = async (task: CreateTask) =>
+export const createTaskRequest = async (tarea: CreateTask) =>
   fetch(`${API}/tareas`, {
     method: "POST",
-    body: JSON.stringify(task),
+    body: JSON.stringify(tarea),
     headers: {
-      "Content-Type:": "application/json",
+      "Content-Type": "application/json", // Aquí está la corrección
     },
   });
 
-export const updateTaskRequest = async (id: string, task: UpdateTask) =>
+export const updateTaskRequest = async (id: string, tarea: UpdateTask) =>
   fetch(`${API}/tareas/${id}`, {
     method: "PUT",
-    body: JSON.stringify(task),
+    body: JSON.stringify(tarea),
     headers: {
       "Content-Type:": "application/json",
     },
