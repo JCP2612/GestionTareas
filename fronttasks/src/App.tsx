@@ -1,11 +1,17 @@
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import TareasPage from "./pages/TareasPage";
 
-import FormularioTareas from "./components/Login/Login";
-
-function App() {
+const App: React.FC = () => {
   return (
-    <>
-      <FormularioTareas />
-    </>
+
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />}></Route>
+        <Route path="/tasks" element={<TareasPage />}></Route>
+      </Routes>
+    </Router>
   )
 }
 

@@ -1,4 +1,3 @@
-// import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -8,8 +7,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Grid2 from '@mui/material/Grid2'
 
-
-function Login() {
+const Login: React.FC = () => {
     return (
         <Grid2
             container
@@ -23,20 +21,30 @@ function Login() {
                         Iniciar Sesión
                     </Typography>
                     <form >
-                        <Box display="flex" flexDirection="column" gap={2}>
-                            <TextField label="Correo" id="outlined-size-normal" defaultValue="Normal" />
-                            <TextField label="Contraseña" id="outlined-size-normal" defaultValue="Normal" />
+                        <Box display="flex" flexDirection="column" gap={3}>
+                            <TextField label="Correo" id="outlined-size-normal" />
+                            <TextField label="Contraseña" id="outlined-size-normal" />
                         </Box>
                     </form>
                 </CardContent>
-                <CardActions>
+                <CardActions sx={{ mt: 2, px: 2, py: 2 }}>
                     <Button
                         type="submit"
                         variant="contained"
                         color="primary"
                         fullWidth
+                        sx={{ mt: 1 }}
                     >
                         Iniciar Sesión
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 1 }}
+                    >
+                        Registrarse
                     </Button>
                 </CardActions>
             </Card>
