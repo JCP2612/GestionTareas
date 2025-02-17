@@ -65,6 +65,7 @@ Esta es una breve descripción de la estructura del proyecto:
 ├── package.json      # Configuración del proyecto y dependencias
 ```
 
+```
 fronttasks/
 ├── public/ # Archivos públicos
 ├── src/ # Código fuente de la aplicación
@@ -78,6 +79,7 @@ fronttasks/
 │ └── main.tsx # Punto de entrada
 ├── package.json # Configuración del proyecto y dependencias
 └── vite.config.ts # Archivo vite, plugins
+```
 
 ### Contribuir
 
