@@ -7,6 +7,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 
 export interface LoginResponse {
   access_token: string;
+  name: string;
 }
 
 @Injectable()
@@ -31,6 +32,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user._id };
     return {
       access_token: this.jwtService.sign(payload),
+      name: user.name || '',
     };
   }
 
