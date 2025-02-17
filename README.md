@@ -72,7 +72,7 @@ fronttasks/
 │ ├── api/ # Servicios backend
 │ ├── components/ # Componentes reutilizables
 │ ├── hooks/ # Custom hooks
-│ ├── interface/ # Archivos de visualización para Lottie
+│ ├── interface/ # Archivos de visualización
 │ ├── pages/ # Páginas de la aplicación
 │ ├── store/ # Manejo de estados globales
 │ ├── App.tsx # Componente principal
