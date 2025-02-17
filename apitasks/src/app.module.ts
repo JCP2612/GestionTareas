@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from './Modules/auth/auth.module';
+import { UsersModule } from './Modules/users/users.module';
 import { TareasModule } from './Modules/tasks/tareas.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -6,6 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [
     MongooseModule.forRoot('mongodb://localhost/dbtasks'),
     TareasModule,
+    AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
