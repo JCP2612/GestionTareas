@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Modal,
     Box,
@@ -14,22 +14,30 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { SelectChangeEvent } from "@mui/material";
-import { useCreateTask } from "../../hooks/useTareaStore"; // Usar el hook de React Query
+import { useUpdateTask } from "../../hooks/useTareaStore"; // Usar el hook de React Query
 
-const FormularioTarea: React.FC = () => {
-    const { mutate: createTask } = useCreateTask();
-    const [open, setOpen] = useState(false);
-    const [taskData, setTaskData] = useState<{
-        title: string;
-        description: string;
-        priority: "Baja" | "Media" | "Alta";
-        complete: boolean;
-    }>({
-        title: "",
-        description: "",
-        priority: "Baja",
-        complete: false,
-    });
+interface Tarea {
+    _id?: string;
+    title: string;
+    priority: "Alta" | "Media" | "Baja" | "Todas";
+    description: string;
+    complete: boolean;
+}
+
+interface EditarTareaProps {
+    task: Tarea;
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
+
+const EditarTarea: React.FC<EditarTareaProps> = ({ task, open, setOpen }) => {
+    const { mutate: updateTask } = useUpdateTask();
+    const [taskData, setTaskData] = useState<Tarea>(task);
+
+    useEffect(() => {
+        setTaskData(task);
+    }, [task]);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
@@ -49,24 +57,21 @@ const FormularioTarea: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        createTask(taskData, {
+        updateTask({ id: task._id!, tarea: taskData }, {
             onSuccess: () => {
                 setTaskData({ title: "", description: "", priority: "Baja", complete: false });
-                alert("Tarea creada exitosamente");
+                alert("Tarea actualizada exitosamente");
                 setOpen(false);
             },
             onError: (error) => {
-                console.error("Error al crear la tarea", error);
-                alert("Error al crear la tarea");
+                console.error("Error al actualizar la tarea", error);
+                alert("Error al actualizar la tarea");
             },
         });
     };
 
     return (
         <>
-            <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
-                Crear nueva tarea
-            </Button>
             <Modal
                 open={open}
                 onClose={() => setOpen(false)}
@@ -93,7 +98,7 @@ const FormularioTarea: React.FC = () => {
                     }}
                 >
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Typography variant="h6">Crear Tarea</Typography>
+                        <Typography variant="h6">Editar Tarea</Typography>
                         <IconButton onClick={() => setOpen(false)}>
                             <CloseIcon />
                         </IconButton>
@@ -147,7 +152,7 @@ const FormularioTarea: React.FC = () => {
                             Cancelar
                         </Button>
                         <Button variant="contained" color="primary" type="submit" >
-                            Agregar nueva tarea
+                            Actualizar Tarea
                         </Button>
                     </Box>
                 </Box>
@@ -156,4 +161,4 @@ const FormularioTarea: React.FC = () => {
     );
 };
 
-export default FormularioTarea;
+export default EditarTarea;

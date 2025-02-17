@@ -7,9 +7,10 @@ import {
 } from "../api/tarea";
 import { CreateTask, Tarea, UpdateTask } from "../interface/task.interface";
 
+
 // Hook para obtener tareas
 export const useFetchTasks = () => {
-    return useQuery<Tarea[], Error>({
+    const { data, error, refetch, isLoading, isError } = useQuery<Tarea[], Error>({
         queryKey: ["tareas"],
         queryFn: async () => {
             const response = await getTasksRequest();
@@ -19,6 +20,7 @@ export const useFetchTasks = () => {
             return response.json();
         },
     });
+    return { data, error, refetch, isLoading, isError };
 };
 
 

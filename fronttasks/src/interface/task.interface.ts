@@ -1,9 +1,9 @@
 export interface Tarea {
-  _id: string;
+  _id?: string;
   title: string;
-  description?: string;
-  priority: "Baja" | "Media" | "Alta";
-  complete?: boolean;
+  description: string;
+  priority: "Todas" | "Alta" | "Media" | "Baja";
+  complete: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

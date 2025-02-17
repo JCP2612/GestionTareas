@@ -21,7 +21,7 @@ export const updateTaskRequest = async (id: string, tarea: UpdateTask) =>
     method: "PUT",
     body: JSON.stringify(tarea),
     headers: {
-      "Content-Type:": "application/json",
+      "Content-Type": "application/json", // Aquí está la corrección
     },
   });
 
