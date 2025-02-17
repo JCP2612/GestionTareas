@@ -9,11 +9,13 @@ import Box from '@mui/material/Box';
 import Grid2 from '@mui/material/Grid2'
 import { useLogin } from '../../hooks/userRegister';
 import { useNavigate } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const [error, setError] = useState<string | null>(null);;
 
     const mutation = useLogin();
 
@@ -22,9 +24,11 @@ const Login: React.FC = () => {
         mutation.mutate({ email, password }, {
             onSuccess: () => {
                 navigate('/tasks');
+                setError(null);
             },
             onError: (error) => {
                 console.error('Error al iniciar sesión:', error);
+                setError('Error al iniciar sesión. Por favor, verifica tus credenciales e intenta nuevamente.'); // Establece el mensaje de error
             }
         })
     };
@@ -43,7 +47,8 @@ const Login: React.FC = () => {
                             Iniciar Sesión
                         </Typography>
                         <Box display="flex" flexDirection="column" gap={3}>
-                            <TextField name="email" value={email}
+                            {error && <Alert severity="error">{error}</Alert>} {/* Muestra el mensaje de error */}
+                            <TextField type="email" name="email" value={email}
                                 onChange={(e) => setEmail(e.target.value)} label="Correo" id="outlined-size-normal"
                                 required />
                             <TextField label="Contraseña" id="outlined-size-normal" type="password"
